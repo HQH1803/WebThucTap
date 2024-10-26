@@ -1,4 +1,4 @@
-namespace Models.EF
+﻿namespace Models.EF
 {
     using System;
     using System.Data.Entity;
@@ -10,6 +10,7 @@ namespace Models.EF
         public DBNoiThat() : base("name=DBNoiThat")
         {
         }
+
         public virtual DbSet<Card> Cards { get; set; }
         public virtual DbSet<Category> Categories { get; set; }
         public virtual DbSet<Contact> Contacts { get; set; }
@@ -26,15 +27,16 @@ namespace Models.EF
 
         protected override void OnModelCreating(DbModelBuilder modelBuilder)
         {
-            //    modelBuilder.Entity<User>()
-            //        .Property(e => e.Password)
-            //        .IsFixedLength();
+            base.OnModelCreating(modelBuilder);
 
-            //    modelBuilder.Entity<UserGroup>()
-            //        .Property(e => e.Name)
-            //        .IsFixedLength();
+            // Cấu hình mối quan hệ giữa Order và OrderDetail với xóa theo chuỗi
+            modelBuilder.Entity<Order>()
+                .HasMany(o => o.OrderDetails)
+                .WithRequired(od => od.Order)
+                .HasForeignKey(od => od.OrderId)
+                .WillCascadeOnDelete(true);
         }
 
-        //public System.Data.Entity.DbSet<WebThucTap.Models.ProductViewModel> ProductViewModels { get; set; }
+        
     }
 }

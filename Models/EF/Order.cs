@@ -5,7 +5,6 @@
     using System.ComponentModel;
     using System.ComponentModel.DataAnnotations;
     using System.ComponentModel.DataAnnotations.Schema;
-    using System.Data.Entity.Spatial;
 
     [Table("Order")]
     public partial class Order
@@ -35,5 +34,8 @@
 
         [DisplayName("Trạng thái đơn hàng")]
         public int StatusId { get; set; }
+
+        // Thêm thuộc tính này để thiết lập mối quan hệ với OrderDetail
+        public virtual ICollection<OrderDetail> OrderDetails { get; set; }
     }
 }

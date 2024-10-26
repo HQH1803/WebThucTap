@@ -88,20 +88,34 @@ namespace WebThucTap.Areas.Admin.Controllers
         }
 
 
+        [HttpGet]
+        [HasCredential(RoleId = "DELETE_CATE")]
+        public ActionResult Delete(int CategoryId)
+        {
+            var category = db.Categories.Find(CategoryId);
+            if (category == null)
+            {
+                return HttpNotFound();
+            }
+            return View(category); // Displays the delete confirmation view
+        }
         [HttpPost]
         [HasCredential(RoleId = "DELETE_CATE")]
-        public ActionResult Delete(FormCollection formCollection)
+        [ValidateAntiForgeryToken]
+        public ActionResult DeleteConfirmed(int CategoryId)
         {
-            string[] ids = formCollection["CategoryId"].Split(new char[] { ',' });
-
-            foreach (string id in ids)
+            var category = db.Categories.Find(CategoryId);
+            if (category == null)
             {
-                var model = db.Categories.Find(Convert.ToInt32(id));
-                db.Categories.Remove(model);
-                db.SaveChanges();
+                return HttpNotFound();
             }
-            return RedirectToAction("Show");
+
+            db.Categories.Remove(category);
+            db.SaveChanges();
+
+            return RedirectToAction("Show"); // Redirect back to the list of categories
         }
 
     }
+
 }

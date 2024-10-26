@@ -51,8 +51,10 @@ namespace WebThucTap.Areas.Admin.Controllers
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
+
             Order order = db.Orders.Find(id);
-            ViewBag.aaaa = db.Status.SingleOrDefault(x => x.StatusId == order.StatusId).Name;
+            ViewBag.aaaa = db.Status.SingleOrDefault(x => x.StatusId == order.StatusId)?.Name;
+
             if (order == null)
             {
                 return HttpNotFound();
@@ -60,24 +62,23 @@ namespace WebThucTap.Areas.Admin.Controllers
             else
             {
                 var orderproducts = (
-                                 from a in db.OrderDetails
-                                 join b in db.Orders
-                                 on a.OrderId equals b.OrderId
-                                 join c in db.Products
-                                 on a.ProductId equals c.ProductId
-                                 select new OrderProduct
-                                 {
-                                     OrderId = a.OrderId,
-                                     ProductName = c.Name,
-                                     Quantity = a.Quantity,
-                                     Price = a.Price,
-                                     ProductId = c.ProductId
-                                 }
-                         ).Where(o=>o.OrderId==order.OrderId).ToList();
+                    from a in db.OrderDetails
+                    join b in db.Orders on a.OrderId equals b.OrderId
+                    join c in db.Products on a.ProductId equals c.ProductId
+                    select new OrderProduct
+                    {
+                        OrderId = a.OrderId,
+                        ProductName = c.Name,
+                        Quantity = a.Quantity,
+                        Price = a.Price,
+                        ProductId = c.ProductId
+                    }
+                ).Where(o => o.OrderId == order.OrderId).ToList();
+
                 ViewBag.orderproducts = orderproducts;
 
                 double? total = 0;
-                foreach(OrderProduct item in orderproducts)
+                foreach (OrderProduct item in orderproducts)
                 {
                     total += item.Price;
                 }
@@ -86,6 +87,7 @@ namespace WebThucTap.Areas.Admin.Controllers
                 return View(order);
             }
         }
+
 
         public ActionResult Create()
         {
@@ -147,25 +149,38 @@ namespace WebThucTap.Areas.Admin.Controllers
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
+
             Order order = db.Orders.Find(id);
             if (order == null)
             {
                 return HttpNotFound();
             }
-            return View(order);
+
+            return View(order); // Show confirmation view
         }
 
+        [HttpPost, ActionName("Delete")]
         [HasCredential(RoleId = "DELETE_ORDER")]
-
-        //[HttpPost, ActionName("Delete")]
-        //[ValidateAntiForgeryToken]
-        public ActionResult Delete(int id)
+        [ValidateAntiForgeryToken]
+        public ActionResult DeleteConfirmed(int id)
         {
-            Order order = db.Orders.Find(id);
+            // Tìm Order cùng với OrderDetails
+            Order order = db.Orders.Include(o => o.OrderDetails).FirstOrDefault(o => o.OrderId == id);
+            if (order == null)
+            {
+                return HttpNotFound();
+            }
+
+            // Xóa các bản ghi OrderDetail liên quan
+            db.OrderDetails.RemoveRange(order.OrderDetails);
+
+            // Xóa Order
             db.Orders.Remove(order);
             db.SaveChanges();
+
             return RedirectToAction("Show");
         }
+
 
         protected override void Dispose(bool disposing)
         {
@@ -176,4 +191,5 @@ namespace WebThucTap.Areas.Admin.Controllers
             base.Dispose(disposing);
         }
     }
-}
+     
+    }
