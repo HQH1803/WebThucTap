@@ -4,7 +4,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Net;
 using System.Web;
 using System.Web.Mvc;
 using WebThucTap.Common;
@@ -192,62 +191,23 @@ namespace WebThucTap.Areas.Admin.Controllers
             }
         }
 
+        //[HttpGet]
+        //[HasCredential(RoleId = "DELETE_PRODUCT")]
+        //public ActionResult Delete()
+        //{
+        //    var session = (UserLogin)Session[WebThucTap.Common.Commoncontent.user_sesion_admin];
+        //    ViewBag.username = session.Username;
+        //    return View();
+        //}
         [HttpGet]
         [HasCredential(RoleId = "DELETE_PRODUCT")]
-        public ActionResult Delete(int? id)
+        public ActionResult Delete(int id)
         {
-            if (id == null)
-            {
-                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
-            }
-
-            var product = db.Products.Find(id.Value);
-
-            if (product == null)
-            {
-                return HttpNotFound();
-            }
-
-            // Ánh xạ sang ProductViewModel
-            var productViewModel = new ProductViewModel
-            {
-                ProductId = product.ProductId,
-                Name = product.Name,
-                Description = product.Description,
-                Discount = product.Discount,
-                Price = product.Price,
-                Quantity = product.Quantity,
-                StartDate = product.StartDate,
-                EndDate = product.EndDate,
-                Photo = product.Photo,
-                CateId = product.CateId,
-                ProviderId = product.ProviderId,
-                // Thêm các thuộc tính khác nếu cần
-            };
-
-            return View(productViewModel); // Trả về view model cho view
+                var model = db.Products.Find(Convert.ToInt32(id));
+                db.Products.Remove(model);
+                db.SaveChanges();
+                return View();
         }
-
-        [HttpPost]
-        [HasCredential(RoleId = "DELETE_PRODUCT")]
-        [ValidateAntiForgeryToken]
-        public ActionResult DeleteConfirmed(int id)
-        {
-            System.Diagnostics.Debug.WriteLine("DeleteConfirmed id: " + id); // Log giá trị của id
-
-            var product = db.Products.Find(id);
-
-            if (product == null)
-            {
-                return HttpNotFound();
-            }
-
-            db.Products.Remove(product);
-            db.SaveChanges();
-
-            return RedirectToAction("Show");
-        }
-
 
         public ActionResult Menu()
         {

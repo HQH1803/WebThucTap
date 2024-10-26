@@ -20,6 +20,5 @@
         public int? Price { get; set; }
         [DisplayName("Số lượng")]
         public int? Quantity { get; set; }
-        public virtual Order Order { get; set; } // Thêm thuộc tính này
     }
 }

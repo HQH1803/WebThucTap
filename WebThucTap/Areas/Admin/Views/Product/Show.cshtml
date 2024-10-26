@@ -3,13 +3,11 @@
     ViewBag.Title = "Show";
     Layout = "~/Areas/Admin/Views/Shared/_Layout.cshtml";
 }
-
 <h2>Danh sách sản phẩm</h2>
 <hr />
 <p>
     <a href="@Url.Action("Add", "Product")" class="btn btn-primary" style="margin-top:10px; margin-bottom:10px;">Thêm sản phẩm</a>
 </p>
-
 <!-- DataTales Example -->
 <div class="card shadow mb-4">
     <div class="card-body">
@@ -35,9 +33,7 @@
                         <tr class="Search">
                             <td style="text-align:center;">@item.ProductId</td>
                             <td style="text-align:center;">@item.Name</td>
-                            <td style="text-align:center;">
-                                <img style="height:100px" src="@Url.Content("~/image/" + item.Photo)" alt="">
-                            </td>
+                            <td style="text-align:center;"><img style="height:100px" src="@Url.Content("~/image/" + item.Photo)" alt=""></td>
                             <td style="text-align:center;">@item.Description</td>
                             <td style="text-align:center;">@item.CateName</td>
                             <td style="text-align:center;">@item.ProviderName</td>
@@ -45,39 +41,25 @@
                             <td style="text-align:center;">@item.Discount%</td>
                             <td style="text-align:center;">@item.Price.GetValueOrDefault(0).ToString("N0")₫</td>
                             <td>
-                                <a href="/Admin/Product/Edit?ProductId=@item.ProductId">
-                                    <span class="fa fa-edit"></span>
-                                </a>
-                                <a href="#" data-toggle="modal" data-target="#deleteModal-@item.ProductId">
-                                    <span class="fa fa-trash-alt"></span>
-                                </a>
-
-                                <!-- Modal -->
-                                <div class="modal fade" id="deleteModal-@item.ProductId" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel-@item.ProductId" aria-hidden="true">
-                                    <div class="modal-dialog" role="document">
+                                <a href="/Admin/Product/Edit?ProductId=@item.ProductId"><span class="fa fa-edit"></span></a>
+                                <a href="/Admin/Product/Delete?ProductId=@item.ProductId" onclick="return confirm('Xác nhận xoá?');"><span class="fa fa-trash-alt"></span></a>
+                                @*<div class="modal fade" id="" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+                                    <div class="modal-dialog">
                                         <div class="modal-content">
                                             <div class="modal-header">
-                                                <h5 class="modal-title" id="deleteModalLabel-@item.ProductId">Xác nhận xóa</h5>
-                                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                                    <span aria-hidden="true">&times;</span>
-                                                </button>
+                                                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                                                <h4 class="modal-title" id="myModalLabel">Delete Confirmation</h4>
                                             </div>
                                             <div class="modal-body">
-                                                Bạn có chắc chắn muốn xóa sản phẩm "@item.Name"?
+                                                Are you sure want to delete this item?
                                             </div>
                                             <div class="modal-footer">
-                                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Huỷ</button>
-                                                @using (Html.BeginForm("DeleteConfirmed", "Product", FormMethod.Post))
-                                                {
-                                                    @Html.AntiForgeryToken()
-                                                    @Html.Hidden("id", item.ProductId) <!-- Sử dụng Hidden để truyền ProductId -->
-                                                    <button type="submit" class="btn btn-danger">Xóa</button>
-                                                }
+                                                <a asp-page-handler="Delete" asp-route-Id="@item.ProductId" id="deleteBtn" class="btn bg-danger mr-1">Xoá</a>
+                                                <button type="button" class="btn btn-default" data-dismiss="modal">Huỷ</button>
                                             </div>
                                         </div>
                                     </div>
-                                </div>
-
+                                </div>*@
                             </td>
                         </tr>
                     }
@@ -95,3 +77,4 @@
 <script type="text/javascript">
     $('#example').DataTable();
 </script>
+<script src="~/Scripts/jquery-3.3.1.min.js"></script>

@@ -1,7 +1,7 @@
 ﻿using BotDetect.Web.Mvc;
 using Models.DAO;
 using Models.EF;
-//using reCAPTCHA.MVC;
+using reCAPTCHA.MVC;
 using System;
 using System.Collections.Generic;
 using System.Data.Entity;
