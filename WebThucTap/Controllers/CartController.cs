@@ -1,4 +1,4 @@
-﻿
+
 using Models.DAO;
 using Models.EF;
 using PagedList;
@@ -215,63 +215,68 @@ namespace WebThucTap.Controllers
         {
             var session = (UserLogin)Session[WebThucTap.Common.Commoncontent.user_sesion];
             var model = db.Users.SingleOrDefault(a => a.UserId == session.UserId);
-            if (true == true)
+
+            if (model != null) // Kiểm tra xem model có tồn tại không
             {
+                // Kiểm tra xem email đã tồn tại trong cơ sở dữ liệu hay chưa
+                var existingUser = db.Users.SingleOrDefault(a => a.Email == n.Email);
+                if (existingUser == null)
+                {
+                    // Nếu email không tồn tại, thông báo lỗi
+                    ModelState.AddModelError("Email", "Email không tồn tại trong hệ thống.");
+                    return View("Error"); // Hoặc trả về trang khác để hiển thị lỗi
+                }
+
                 model.UserId = session.UserId;
                 model.Name = n.Name;
                 model.Phone = n.Phone;
-                model.Password = model.Password;
-                model.GroupId = model.GroupId;
+                model.Password = model.Password; // Không thay đổi password
+                model.GroupId = model.GroupId; // Không thay đổi GroupId
                 model.Address = n.Address;
-
                 model.Status = true;
-                model.Email = n.Email;
                 model.Username = session.Username;
+
+                // Không cập nhật email
+                // model.Email = n.Email; // Bỏ dòng này đi
+
                 db.Entry(model).State = System.Data.Entity.EntityState.Modified;
                 db.SaveChanges();
 
                 var order = new Order();
                 order.UpdateDate = DateTime.Now;
-                //order.UpdateDate = DateTime.ToString("yyyy-MM-dd h:mm:ss");
-                //DateTime.Now.ToString("yyyy-MM-dd hh:mm:ss");
                 order.ShipAddress = n.Address;
                 order.ShipPhone = n.Phone;
                 order.ShipName = n.Name;
-                order.ShipEmail = n.Email;
+                order.ShipEmail = n.Email; // Bạn vẫn có thể sử dụng email ở đây
                 order.UserId = session.UserId;
                 order.StatusId = 1;
-
 
                 var id = new OrderDao().Insert(order);
                 var cart = (List<CartItem>)Session[CartSession];
                 var detailDao = new OrderDetailDao();
                 double total = 0;
-                double a = 0;
                 var htmldata = "<p><b>STT | Tên | Số lượng | Đơn giá | Khuyến mại</b></p>";
                 int count = 0;
                 foreach (var item in cart)
                 {
-                        var orderDetail = new OrderDetail();
-                        orderDetail.OrderId = id;
-                        orderDetail.ProductId = item.Product.ProductId;
+                    var orderDetail = new OrderDetail();
+                    orderDetail.OrderId = id;
+                    orderDetail.ProductId = item.Product.ProductId;
 
-                        //a = Convert.ToInt32(item.Product.Price);
-                        var discountprice = Convert.ToInt32(item.Product.Price - item.Product.Price * item.Product.Discount * 0.01);
-                        orderDetail.Price = discountprice;
+                    var discountprice = Convert.ToInt32(item.Product.Price - item.Product.Price * item.Product.Discount * 0.01);
+                    orderDetail.Price = discountprice;
+                    orderDetail.Quantity = item.Quantity;
 
-                        orderDetail.Quantity = item.Quantity;
-
-                        detailDao.Insert(orderDetail);
-                        total += discountprice * item.Quantity;
-                        var pro = db.Products.FirstOrDefault(m => m.ProductId == item.Product.ProductId);
-                        pro.Quantity = pro.Quantity - item.Quantity;
-                        htmldata += "<p>"+count+"  |  "+item.Product.Name+ "  |  "+item.Quantity+"  |  "+ discountprice.ToString("N0") +" | "+item.Product.Discount.ToString()+" %</p>";
-                        db.SaveChanges();
-                        count += 1;
+                    detailDao.Insert(orderDetail);
+                    total += discountprice * item.Quantity;
+                    var pro = db.Products.FirstOrDefault(m => m.ProductId == item.Product.ProductId);
+                    pro.Quantity = pro.Quantity - item.Quantity;
+                    htmldata += "<p>" + count + "  |  " + item.Product.Name + "  |  " + item.Quantity + "  |  " + discountprice.ToString("N0") + " | " + item.Product.Discount.ToString() + " %</p>";
+                    db.SaveChanges();
+                    count += 1;
                 }
 
                 string content = System.IO.File.ReadAllText(Server.MapPath("~/Common/neworder.html"));
-
                 content = content.Replace("{{id}}", id.ToString());
                 content = content.Replace("{{CustomerName}}", n.Name);
                 content = content.Replace("{{Phone}}", n.Phone.ToString());
@@ -281,9 +286,7 @@ namespace WebThucTap.Controllers
                 content = content.Replace("{{data}}", htmldata);
 
                 var toEmail = ConfigurationManager.AppSettings["ToEmailAddress"].ToString();
-
                 new MailHelper().SendMail(n.Email, "Đơn hàng mới từ NOITHATGO.VN", content);
-                //new MailHelper().SendMail(toEmail, "Đơn hàng mới từ NoiThatShop", content);
 
                 ViewBag.EMAIL = n.Email;
                 return Redirect("/hoan-thanh");
@@ -293,6 +296,7 @@ namespace WebThucTap.Controllers
                 return Redirect("/Cart/Error");
             }
         }
+
 
         public ActionResult HistoryCart(int? page)
         {
